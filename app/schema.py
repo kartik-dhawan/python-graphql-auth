@@ -1,29 +1,16 @@
 import strawberry
-from typing import List
+# `merge_types` used to merge mutations written in different variables
+from strawberry.tools import merge_types
+from app.auth.mutations import AuthMutations
+from app.auth.queries import AuthQueries
 
 
-@strawberry.type
-class User:
-    id: str
-    name: str
+# A combination of all mutations, written separately for modularity
+mutations = merge_types("Mutation", (AuthMutations,))
 
+# A combination of all queries, written separately for modularity
+# () -> is a tuple, hence when a single item is there, we put comma at the end to make it behave like a tuple
+queries = merge_types("Query", (AuthQueries,))
 
-def getUsersFn():
-    return [User(**row) for row in dummyUsers]
-
-
-def getUserByIdFn(root, id: str) -> User | None:
-    foundUser = [User(**row) for row in dummyUsers if row["id"] == id]
-    return foundUser[0] if len(foundUser) > 0 else None
-
-
-dummyUsers = [{"id": "1", "name": "Kartik"}, {"id": "2", "name": "KK"}]
-
-
-@strawberry.type
-class Query:
-    getUsers: List[User] = strawberry.field(resolver=getUsersFn)
-    getUserById: User | None = strawberry.field(resolver=getUserByIdFn)
-
-
-schema = strawberry.Schema(query=Query)
+# combines all queries & mutation in to schema, which is used by the graphql router
+schema = strawberry.Schema(query=queries, mutation=mutations)
