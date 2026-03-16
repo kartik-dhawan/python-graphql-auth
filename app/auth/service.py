@@ -1,39 +1,62 @@
-from app.auth.types import SignUpInput, SignUpResponse
+from app.auth.types import SignUpEmailInput, SignUpEmailResponse, OtpSignInResponse, PhoneSignInInput, OtpDispatchInput, OtpDispatchResponse
 from app.supabase.config import supabase
 from gotrue.errors import AuthApiError
+from app.auth.methods import convert_supabase_session_to_tokens
 
 
-# a function to allow user to sign up either using phone or email along with name & password
-def user_sign_up(input: SignUpInput) -> SignUpResponse:
+# a function to allow user to sign up using email along with name & password
+def user_sign_up(input: SignUpEmailInput) -> SignUpEmailResponse:
     try:
-        # base payload
-        payload = {"name": input.name}
-
-        if not input.email and not input.phone:
-            raise Exception(
-                "Enter either your phone number or email to continue.")
-
-        # switching to email or phone sign up depending upon user input
-        if input.email:
-            payload["email"] = input.email
-        else:
-            payload["phone"] = input.phone
+        if not input.email:
+            raise Exception("Enter email to continue.")
 
         # signing up on supabase
         response = supabase.auth.sign_up({
-            **payload,
+            "email": input.email,
             "password": input.password,
-            "options": {
-                "data": {"name": input.name}
-            }
         })
 
         if not response.user:
             raise Exception(
-                "Sign up failed. Please try again. The email/phone might be in use before.")
+                "Sign up failed. Please try again. The email might be in use before.")
 
-        return SignUpResponse(id=response.user.id, name=input.name, email=input.email, phone=input.phone)
+        # converts session data from supabase to api response
+        session_data = convert_supabase_session_to_tokens(response.session)
+
+        return SignUpEmailResponse(id=response.user.id, email=input.email, message="User account created successfully!", session=session_data)
     except AuthApiError as e:
         raise Exception(f"Sign up failed: {str(e.message)}")
     except Exception as e:
         raise Exception(f"Sign up failed: {str(e)}")
+
+
+def user_phone_otp_dispatch(input: OtpDispatchInput) -> OtpSignInResponse:
+    try:
+        response = supabase.auth.sign_in_with_otp({
+            "phone": input.phone
+        })
+
+        return OtpDispatchResponse(message="OTP sent successfully!", phone=input.phone)
+    except AuthApiError as e:
+        raise Exception(f"Sign up failed: {str(e.message)}")
+    except Exception as e:
+        raise Exception(f"Verification failed: {str(e)}")
+
+
+def user_phone_otp_verify(input: PhoneSignInInput) -> OtpSignInResponse:
+    try:
+        response = supabase.auth.verify_otp({
+            "phone": input.phone,
+            "token": input.otp,
+            "type": "sms"
+        })
+
+        # converts session data from supabase to api response
+        session_data = convert_supabase_session_to_tokens(response.session)
+
+        OtpSignInResponse(id=response.user.id,
+                          isValidated=True, session=session_data)
+    except AuthApiError as e:
+        raise Exception(f"Sign up failed: {str(e.message)}")
+    except Exception as e:
+        raise Exception(f"OTP Verification failed: ${str(e)}")
