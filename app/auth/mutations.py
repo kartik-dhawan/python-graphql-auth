@@ -1,6 +1,6 @@
 import strawberry
-from app.auth.service import user_sign_up, user_phone_otp_verify, user_phone_otp_dispatch
-from app.auth.types import SignUpEmailInput, SignUpEmailResponse, OtpSignInResponse, PhoneSignInInput, OtpDispatchResponse, OtpDispatchInput
+from app.auth.service import user_sign_up, user_phone_otp_verify, user_phone_otp_dispatch, user_email_sign_in
+from app.auth.types import SignUpEmailInput, SignUpEmailResponse, OtpSignInResponse, PhoneSignInInput, OtpDispatchResponse, OtpDispatchInput, SignInInput, SignInResponse
 
 
 @strawberry.type
@@ -10,6 +10,11 @@ class AuthMutations:
     @strawberry.mutation
     def signUpWithEmail(self, input: SignUpEmailInput) -> SignUpEmailResponse:
         return user_sign_up(input)
+
+    # sign in eemail & password TODO: add username signin later
+    @strawberry.mutation
+    def userSignIn(self, input: SignInInput) -> SignInResponse:
+        return user_email_sign_in(input)
 
     # sending an actual otp
     @strawberry.mutation

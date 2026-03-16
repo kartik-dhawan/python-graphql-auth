@@ -1,4 +1,4 @@
-from app.auth.types import SignUpEmailInput, SignUpEmailResponse, OtpSignInResponse, PhoneSignInInput, OtpDispatchInput, OtpDispatchResponse
+from app.auth.types import SignUpEmailInput, SignUpEmailResponse, OtpSignInResponse, PhoneSignInInput, OtpDispatchInput, OtpDispatchResponse, SignInInput, SignInResponse
 from app.supabase.config import supabase
 from gotrue.errors import AuthApiError
 from app.auth.methods import convert_supabase_session_to_tokens
@@ -62,3 +62,20 @@ def user_phone_otp_verify(input: PhoneSignInInput) -> OtpSignInResponse:
         raise Exception(f"Sign up failed: {str(e.message)}")
     except Exception as e:
         raise Exception(f"OTP Verification failed: ${str(e)}")
+
+
+def user_email_sign_in(input: SignInInput) -> SignInResponse:
+    try:
+        response = supabase.auth.sign_in_with_password({
+            "email": input.email,
+            "password": input.password
+        })
+
+        # converts session data from supabase to api response
+        session_data = convert_supabase_session_to_tokens(response.session)
+
+        return SignInResponse(id=response.user.id, email=response.user.email, message="Signed in successfully!", session=session_data)
+    except AuthApiError as a:
+        raise Exception(a.message)
+    except Exception as e:
+        raise Exception(f"Email sign-in failed: {str(e)}")

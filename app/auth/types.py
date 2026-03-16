@@ -4,7 +4,14 @@ from typing import Optional
 
 @strawberry.input
 class SignUpEmailInput:
-    email: Optional[str] = None
+    email: str
+    password: str
+
+
+@strawberry.input
+class SignInInput:
+    email: str
+    # username: str -- later we can use email or username
     password: str
 
 
@@ -32,6 +39,14 @@ class SignUpEmailResponse:
     email: Optional[str] = None
     id: str
     message: Optional[str] = None
+    session: UmsAuthSession
+
+
+@strawberry.type
+class SignInResponse:
+    message: Optional[str] = None
+    email: str
+    id: str
     session: UmsAuthSession
 
 
