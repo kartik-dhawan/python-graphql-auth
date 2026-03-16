@@ -14,9 +14,11 @@ class AuthMutations:
     # sending an actual otp
     @strawberry.mutation
     def authSendOTP(self, input: OtpDispatchInput) -> OtpDispatchResponse:
+        # TIP: - next time take phone & otp in same API, otp being optional - if otp is not there, call user_phone_otp_dispatch function - if otp is there, call user_phone_otp_verify function
         return user_phone_otp_dispatch(input)
 
     # sign up/in with phone & otp only
     @strawberry.mutation
     def signInWithPhone(self, input: PhoneSignInInput) -> OtpSignInResponse:
+        # TIP: - this could be merged with dispatch otp mutation & be made just one mutation
         return user_phone_otp_verify(input)

@@ -30,6 +30,7 @@ def user_sign_up(input: SignUpEmailInput) -> SignUpEmailResponse:
         raise Exception(f"Sign up failed: {str(e)}")
 
 
+# a function solely to dispatch the OTP
 def user_phone_otp_dispatch(input: OtpDispatchInput) -> OtpSignInResponse:
     try:
         response = supabase.auth.sign_in_with_otp({
@@ -43,6 +44,7 @@ def user_phone_otp_dispatch(input: OtpDispatchInput) -> OtpSignInResponse:
         raise Exception(f"Verification failed: {str(e)}")
 
 
+# a function to verify that dispatched OTP with the phone number & then sign the user in/up
 def user_phone_otp_verify(input: PhoneSignInInput) -> OtpSignInResponse:
     try:
         response = supabase.auth.verify_otp({
