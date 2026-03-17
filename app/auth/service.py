@@ -1,7 +1,8 @@
-from app.auth.types import SignUpEmailInput, SignUpEmailResponse, OtpSignInResponse, PhoneSignInInput, OtpDispatchInput, OtpDispatchResponse, SignInInput, SignInResponse, UserResponse
+from app.auth.types import SignUpEmailInput, SignUpEmailResponse, OtpSignInResponse, PhoneSignInInput, OtpDispatchInput, OtpDispatchResponse, SignInInput, SignInResponse, UserResponse, User
 from app.supabase.config import supabase, supabase_admin
 from gotrue.errors import AuthApiError
 from app.auth.methods import convert_supabase_session_to_tokens, manipulate_user_object
+from app.debug import pp
 
 
 # a function to allow user to sign up using email along with name & password
@@ -96,3 +97,18 @@ def get_all_users() -> UserResponse:
         raise Exception(a.message)
     except Exception as e:
         raise Exception(f"Failed to fetch users: {str(e)}")
+
+
+def get_current_user() -> User:
+    try:
+        response = supabase.auth.get_user()
+
+        if not response or not response.user:
+            raise Exception("No user currently linked.")
+
+        pp(response)
+        return manipulate_user_object(response.user)
+    except AuthApiError as a:
+        raise Exception(a.message)
+    except Exception as e:
+        raise Exception(f"Cannot fetch the user. {str(e)}")
