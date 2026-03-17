@@ -1,7 +1,8 @@
 import strawberry
-from typing import Optional
+from typing import Optional, List
 
 
+# Types for Mutations
 @strawberry.input
 class SignUpEmailInput:
     email: str
@@ -62,3 +63,22 @@ class OtpSignInResponse:
     isValidated: bool
     id: str
     session: UmsAuthSession
+
+# Types for Queries
+
+
+@strawberry.type
+class User:
+    id: str
+    name: Optional[str]
+    email: str
+    createdAt: str
+    lastLogin: str
+    updatedAt: str
+
+
+@strawberry.type
+class UserResponse:
+    users: List[User]
+    count: int
+    message: Optional[str]

@@ -1,7 +1,7 @@
-from app.auth.types import SignUpEmailInput, SignUpEmailResponse, OtpSignInResponse, PhoneSignInInput, OtpDispatchInput, OtpDispatchResponse, SignInInput, SignInResponse
-from app.supabase.config import supabase
+from app.auth.types import SignUpEmailInput, SignUpEmailResponse, OtpSignInResponse, PhoneSignInInput, OtpDispatchInput, OtpDispatchResponse, SignInInput, SignInResponse, UserResponse
+from app.supabase.config import supabase, supabase_admin
 from gotrue.errors import AuthApiError
-from app.auth.methods import convert_supabase_session_to_tokens
+from app.auth.methods import convert_supabase_session_to_tokens, manipulate_user_object
 
 
 # a function to allow user to sign up using email along with name & password
@@ -79,3 +79,20 @@ def user_email_sign_in(input: SignInInput) -> SignInResponse:
         raise Exception(a.message)
     except Exception as e:
         raise Exception(f"Email sign-in failed: {str(e)}")
+
+
+def get_all_users() -> UserResponse:
+    try:
+        response = supabase_admin.auth.admin.list_users()
+
+        count = len(response)
+        # converts supabase user object into graphql user object
+        modified_users = [manipulate_user_object(u) for u in response]
+        # Only send the message if there are no users found
+        message = "No users found" if count == 0 else ""
+
+        return UserResponse(users=modified_users, count=count, message=message)
+    except AuthApiError as a:
+        raise Exception(a.message)
+    except Exception as e:
+        raise Exception(f"Failed to fetch users: {str(e)}")

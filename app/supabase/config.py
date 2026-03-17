@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 url: str = os.getenv("SUPABASE_URL")
-key: str = os.getenv("SUPABASE_KEY")
+anon_key: str = os.getenv("SUPABASE_KEY")
+service_role_key: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 
-supabase: Client = create_client(url, key)
+supabase: Client = create_client(url, anon_key)
+supabase_admin: Client = create_client(url, service_role_key)
