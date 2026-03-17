@@ -106,9 +106,20 @@ def get_current_user() -> User:
         if not response or not response.user:
             raise Exception("No user currently linked.")
 
-        pp(response)
         return manipulate_user_object(response.user)
     except AuthApiError as a:
         raise Exception(a.message)
     except Exception as e:
         raise Exception(f"Cannot fetch the user. {str(e)}")
+
+
+def get_user_by_id(uid: str) -> User:
+    try:
+        response = supabase_admin.auth.admin.get_user_by_id(uid)
+
+        if not response or not response.user:
+            raise Exception("Cannot find the user with this Id")
+
+        return manipulate_user_object(response.user)
+    except Exception as e:
+        raise Exception(f"Cannot fetch the user: {str(e)}")
